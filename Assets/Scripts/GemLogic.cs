@@ -1,45 +1,43 @@
-﻿using System.Runtime.InteropServices;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Scripts {
     public class GemLogic: MonoBehaviour {
         public Sprite[] GemTypes;
-        public int PosX;
-        public int PosY;
-
-        private int _curType = 0;
-        private SpriteRenderer _spriteRenderer;
+        public Vector2 GridPos;
         private BoxCollider2D _boxCollider;
+        private Camera _camera;
+
+        private int _curType;
+        private SpriteRenderer _spriteRenderer;
 
         private void Start() {
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _boxCollider = GetComponent<BoxCollider2D>();
+            _camera = Camera.main;
 
             SetType(Random.Range(0, GemTypes.Length));
         }
 
         public void Init(int x, int y) {
-            PosX = x;
-            PosY = y;
+            GridPos = new Vector2(x, y);
         }
 
         private void Update() {
+            var goal = Utils.GetScreenPosByGrid(GridPos);
+            goal = _camera.ScreenToWorldPoint(goal);
+            transform.position = Vector2.Lerp(goal, transform.position, Constants.GemTransitionTime);
         }
 
         public bool IsCanSwap(Vector2 pos) {
             if (pos.x >= 0 && pos.x < Constants.LevelWidth && pos.y >= 0 && pos.y < Constants.LevelHeight){
                 // Chech if pos is Neighbor
-                if (Mathf.Abs(PosX - pos.x) == 1 && (PosY - pos.y == 0) ||
-                    Mathf.Abs(PosY - pos.y) == 1 && (PosX - pos.x == 0)){
+                if (Mathf.Abs(GridPos.x - pos.x) == 1 && (GridPos.y - pos.y == 0) ||
+                    Mathf.Abs(GridPos.y - pos.y) == 1 && (GridPos.x - pos.x == 0)){
                     return true;
                 }
-                else{
-                    return false;
-                }
-            }
-            else{
                 return false;
             }
+            return false;
         }
 
         public void SetType(int type) {
@@ -47,6 +45,10 @@ namespace Assets.Scripts {
                 _curType = type;
                 _spriteRenderer.sprite = GemTypes[type];
             }
+        }
+
+        public int GetGemType() {
+            return _curType;
         }
     }
 }
