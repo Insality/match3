@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -13,8 +12,6 @@ namespace Assets.Scripts {
         private Camera _camera;
         private GemLogic _choosenGem;
         private GameObject _cursor;
-
-        private bool _isUpdatingGrid;
 
         private GemLogic _lastMovedGem1;
         private GemLogic _lastMovedGem2;
@@ -41,7 +38,6 @@ namespace Assets.Scripts {
             _player.Restart();
 
             SetActiveGem(null);
-            _isUpdatingGrid = false;
             _updatingGridCounter = 0;
 
             for (var i = 0; i < Constants.LevelHeight; i++){
@@ -53,16 +49,16 @@ namespace Assets.Scripts {
 
         private GemLogic CreateGem(int posX, int posY, Constants.BonusType bonus) {
             var gem = Instantiate(GemPrefab);
-            gem.GetComponent<GemLogic>().Init(posX, posY, bonus);
+            var gemLogic = gem.GetComponent<GemLogic>();
+            gemLogic.Init(posX, posY, bonus);
 
             var gemPos = Utils.GetScreenPosByGrid(new Vector2(posX, posY));
             gemPos = _camera.ScreenToWorldPoint(gemPos);
             gemPos = new Vector3(gemPos.x, gemPos.y, 0);
-
             gem.transform.position = gemPos;
 
-            Gems.Add(gem.GetComponent<GemLogic>());
-            return gem.GetComponent<GemLogic>();
+            Gems.Add(gemLogic);
+            return gemLogic;
         }
 
         private void Update() {
@@ -77,12 +73,13 @@ namespace Assets.Scripts {
 
 
         private void UpdateControl() {
-            if (!_isUpdatingGrid){
+            // Block control if grid on updating
+            if (_updatingGridCounter <= 0){
                 if (Input.GetMouseButtonDown(0)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition);
                     // If clicked on grid:
                     if (grid.x >= 0 && grid.x < Constants.LevelWidth && grid.y >= 0 && grid.y < Constants.LevelHeight){
-                        ChooseGem(grid);
+                        SelectActionGem(grid);
                     }
                     else{
                         _choosenGem = null;
@@ -119,10 +116,8 @@ namespace Assets.Scripts {
 
             if (isUpdated){
                 _updatingGridCounter = Constants.GemTransitionTime;
-                _isUpdatingGrid = true;
             }
             else{
-                _isUpdatingGrid = false;
                 CheckAndDestroyMathes();
             }
 
@@ -130,11 +125,11 @@ namespace Assets.Scripts {
         }
 
         private void RefillGrid() {
-            var i = Constants.LevelHeight - 1;
+            const int i = Constants.LevelHeight - 1;
             for (var j = 0; j < Constants.LevelWidth; j++){
                 var gem = GetGemByGridPos(new Vector2(j, i));
                 if (gem == null){
-                    var newGem = CreateGem(j, i+2, Constants.BonusType.NoBonus);
+                    var newGem = CreateGem(j, i + 2, Constants.BonusType.NoBonus);
                     MoveGem(newGem, new Vector2(j, i));
                 }
             }
@@ -164,7 +159,7 @@ namespace Assets.Scripts {
         }
 
 
-        private void ChooseGem(Vector2 gridPos) {
+        private void SelectActionGem(Vector2 gridPos) {
             var gem = GetGemByGridPos(gridPos);
             if (_choosenGem != null){
                 if (_choosenGem.IsCanSwap(gridPos)){
@@ -181,25 +176,25 @@ namespace Assets.Scripts {
 
         private void SetActiveGem(GemLogic gem) {
             _choosenGem = gem;
-            if (gem == null) {
-                _cursor.transform.position = new Vector2(-10, -10);
-            } else {
+            if (gem == null){
+                _cursor.transform.position = new Vector3(-10, -10);
+            }
+            else{
                 var screenPos = Utils.GetScreenPosByGrid(gem.GridPos);
                 var newPos = _camera.ScreenToWorldPoint(screenPos);
-                newPos.z = 0;
+                newPos.z = -5;
                 _cursor.transform.position = newPos;
             }
         }
 
-        public void MoveGem(GemLogic gem, Vector2 GridPos) {
-            gem.GridPos = GridPos;
+        public void MoveGem(GemLogic gem, Vector2 gridPos) {
+            gem.GridPos = gridPos;
         }
 
         public void DestroyGem(Vector2 gridPos) {
             var gem = GetGemByGridPos(gridPos);
             if (gem != null){
                 Gems.Remove(gem);
-
                 gem.ActionBonus(this);
 
                 Destroy(gem.gameObject);
@@ -253,6 +248,7 @@ namespace Assets.Scripts {
                         }
                     }
                 }
+
                 if (lastMatch.Count >= 3){
                     matches.Add(lastMatch.ToArray().ToList());
                 }
@@ -273,7 +269,6 @@ namespace Assets.Scripts {
                         }
                         else{
                             if (lastMatch.Count >= 3){
-                                // Copy list hack?
                                 matches.Add(lastMatch.ToArray().ToList());
                             }
                             lastMatch.Clear();
@@ -292,13 +287,8 @@ namespace Assets.Scripts {
         }
 
         public GemLogic GetGemByGridPos(Vector2 gridPos) {
-            try{
-                var gem = Gems.First(g=>g.GridPos == gridPos);
-                return gem;
-            }
-            catch (InvalidOperationException){
-                return null;
-            }
+            var gem = Gems.FirstOrDefault(g=>g.GridPos == gridPos);
+            return gem;
         }
     }
 }

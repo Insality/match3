@@ -8,7 +8,6 @@ namespace Assets.Scripts {
         public Sprite BonusRowBombSprite;
         public Sprite[] GemTypes;
         public Vector2 GridPos;
-        private BoxCollider2D _boxCollider;
         private Camera _camera;
 
         private int _curType = -1;
@@ -16,7 +15,6 @@ namespace Assets.Scripts {
 
         private void Start() {
             _spriteRenderer = GetComponent<SpriteRenderer>();
-            _boxCollider = GetComponent<BoxCollider2D>();
             _camera = Camera.main;
 
             if (_curType == -1){
@@ -34,9 +32,9 @@ namespace Assets.Scripts {
         }
 
         private void Update() {
-            var goal = Utils.GetScreenPosByGrid(GridPos);
-            goal = _camera.ScreenToWorldPoint(goal);
-            transform.position = Vector2.Lerp(goal, transform.position, Constants.GemTransitionTime*2);
+            var goalPos = Utils.GetScreenPosByGrid(GridPos);
+            goalPos = _camera.ScreenToWorldPoint(goalPos);
+            transform.position = Vector2.Lerp(goalPos, transform.position, Constants.GemTransitionTime*2);
         }
 
         public bool IsCanSwap(Vector2 pos) {
@@ -52,7 +50,7 @@ namespace Assets.Scripts {
         }
 
         public void SetType(int type) {
-            if (type <= GemTypes.Length){
+            if (type >= 0 && type < GemTypes.Length){
                 _curType = type;
                 _spriteRenderer.sprite = GemTypes[type];
             }
@@ -64,24 +62,22 @@ namespace Assets.Scripts {
 
         public void AddBonus(Constants.BonusType bonus) {
             Bonus = bonus;
+            var bonusGO = new GameObject();
+            bonusGO.transform.parent = transform;
+            bonusGO.AddComponent<SpriteRenderer>();
+            bonusGO.transform.localPosition = new Vector3(0, 0, -1);
+
             if (bonus == Constants.BonusType.CollumnBomb){
-                var bonusGO = new GameObject {name = "CollumnBonus"};
-                bonusGO.transform.parent = transform;
-                bonusGO.AddComponent<SpriteRenderer>();
+                bonusGO.name = "CollumnBonus";
                 bonusGO.GetComponent<SpriteRenderer>().sprite = BonusCollumnBombSprite;
-                bonusGO.transform.localPosition = new Vector3(0, 0, -1);
             }
             if (bonus == Constants.BonusType.RowBomb){
-                var bonusGO = new GameObject {name = "RowBonus"};
-                bonusGO.transform.parent = transform;
-                bonusGO.AddComponent<SpriteRenderer>();
+                bonusGO.name = "RowBonus";
                 bonusGO.GetComponent<SpriteRenderer>().sprite = BonusRowBombSprite;
-                bonusGO.transform.localPosition = new Vector3(0, 0, -1);
             }
         }
 
-        public void ActionBonus(GameManager gManager) {
-            //            Debug.Log(Bonus);
+        public void BonusAction(GameManager gManager) {
             if (Bonus == Constants.BonusType.CollumnBomb){
                 var toDestroy = gManager.Gems.Where(g=>GridPos.x == g.GridPos.x).ToList();
                 foreach (var gem in toDestroy){
