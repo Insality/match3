@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Assets.Scripts {
     public class GameManager: MonoBehaviour {
@@ -20,6 +21,10 @@ namespace Assets.Scripts {
         private bool _isUpdatingGrid;
         private float _updatingGridCounter;
         private PlayerStats _player;
+
+        private GemLogic _lastMovedGem1;
+        private GemLogic _lastMovedGem2;
+
 
 
         private void Start() {
@@ -163,8 +168,20 @@ namespace Assets.Scripts {
             MoveGem(gem1, gem2.GridPos);
             MoveGem(gem2, tmpPos);
 
+            _lastMovedGem1 = gem1;
+            _lastMovedGem2 = gem2;
+            Invoke("CheckReverseTurn", Constants.GemTransitionTime/2);
+            
             SelectGem(null);
             _updatingGridCounter = Constants.GemTransitionTime;
+        }
+
+        public void CheckReverseTurn() {
+            if (!GetMatchesGem().Any()) {
+                var tmpPos = _lastMovedGem1.GridPos;
+                MoveGem(_lastMovedGem1, _lastMovedGem2.GridPos);
+                MoveGem(_lastMovedGem2, tmpPos);
+            }
         }
 
         private void SelectGem(GemLogic gem) {
