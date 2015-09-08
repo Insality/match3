@@ -8,11 +8,10 @@ public class PlayerStats : MonoBehaviour {
     public int Score;
     public Text ScoreText;
 
-    private int _curGUIScore;
-	// Use this for initialization
+    private int _curGuiScore;
 	void Start () {
 	    Score = 0;
-	    _curGUIScore = 0;
+	    _curGuiScore = 0;
 	}
 
 
@@ -20,16 +19,20 @@ public class PlayerStats : MonoBehaviour {
         Score += score;
     }
 
-	// Update is called once per frame
+    public void Restart() {
+        Score = 0;
+        _curGuiScore = 0;
+    }
+
 	void Update () {
 
-	    if (_curGUIScore < Score){
-	        _curGUIScore += 9;
+	    if (_curGuiScore < Score){
+	        _curGuiScore += 9;
 	    }
 	    else{
-	        _curGUIScore = Score;
+	        _curGuiScore = Score;
 	    }
 
-	    ScoreText.text = _curGUIScore.ToString();
+	    ScoreText.text = _curGuiScore.ToString();
 	}
 }

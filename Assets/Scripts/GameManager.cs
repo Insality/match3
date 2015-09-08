@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.Networking;
+using Random = UnityEngine.Random;
 
 namespace Assets.Scripts {
     public class GameManager: MonoBehaviour {
@@ -39,19 +41,25 @@ namespace Assets.Scripts {
         }
 
         private void InitLevel() {
+            foreach (var gem in Gems){
+                Destroy(gem.gameObject);
+            }
+            Gems.Clear();
+
+            _player.Restart();
             SelectGem(null);
             _isUpdatingGrid = false;
             _updatingGridCounter = 0;
             for (var i = 0; i < Constants.LevelHeight; i++){
                 for (var j = 0; j < Constants.LevelWidth; j++){
-                    CreateGem(j, i);
+                    CreateGem(j, i, Constants.BonusType.NoBonus);
                 }
             }
         }
 
-        private void CreateGem(int posX, int posY) {
+        private GemLogic CreateGem(int posX, int posY, Constants.BonusType bonus) {
             var gem = Instantiate(GemPrefab);
-            gem.GetComponent<GemLogic>().Init(posX, posY);
+            gem.GetComponent<GemLogic>().Init(posX, posY, bonus);
 
             var gemPos = Utils.GetScreenPosByGrid(new Vector2(posX, posY));
 
@@ -60,6 +68,7 @@ namespace Assets.Scripts {
             gem.transform.position = gemPos;
 
             Gems.Add(gem.GetComponent<GemLogic>());
+            return gem.GetComponent<GemLogic>();
         }
 
         private void Update() {
@@ -75,8 +84,21 @@ namespace Assets.Scripts {
         private void CheckAndDestroyMathes() {
             var matches = GetMatchesGem();
             foreach (var match in matches){
+                var centerPos = match[match.Count/2].GridPos;
+                var type = match[0].GetGemType();
+                var bonusType = Constants.BonusType.NoBonus;
+                if (match[0].GridPos.x == match[1].GridPos.x){
+                    bonusType = Constants.BonusType.CollumnBomb;
+                } else if (match[0].GridPos.y == match[1].GridPos.y) {
+                    bonusType = Constants.BonusType.RowBomb;
+                }
+
                 foreach (var gemLogic in match){
                     DestroyGem(gemLogic.GridPos);
+                }
+                if (match.Count > 3) {
+                    var gem = CreateGem((int)centerPos.x, (int)centerPos.y, bonusType);
+                    gem.SetType(type);
                 }
             }
         }
@@ -92,6 +114,18 @@ namespace Assets.Scripts {
                     else{
                         _choosen = null;
                     }
+                }
+
+                if (Input.GetMouseButtonDown(1)) {
+                    var grid = Utils.GetGridPosByScreen(Input.mousePosition);
+                    DestroyGem(grid);
+                }
+            }
+
+
+            if (Input.GetKeyDown(KeyCode.Space)){
+                foreach (var gem in Gems.ToList()){
+                    DestroyGem(gem.GridPos);
                 }
             }
         }
@@ -130,7 +164,7 @@ namespace Assets.Scripts {
             for (var j = 0; j < Constants.LevelWidth; j++){
                 var gem = GetGemByGridPos(new Vector2(j, i));
                 if (gem == null){
-                    CreateGem(j, i);
+                    CreateGem(j, i, Constants.BonusType.NoBonus);
                 }
             }
         }
@@ -158,6 +192,9 @@ namespace Assets.Scripts {
             var gem = GetGemByGridPos(gridPos);
             if (gem != null){
                 Gems.Remove(gem);
+
+                gem.ActionBonus(this);
+
                 Destroy(gem.gameObject);
                 _player.AddScore(Constants.ScorePerGem);
             }

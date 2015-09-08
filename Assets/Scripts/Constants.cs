@@ -19,9 +19,16 @@ namespace Assets.Scripts {
         public static int GridOffsetX;
         public static int GridOffsetY;
 
+
         private void Start() {
             GridOffsetX = (Screen.width - GridWidth)/2;
             GridOffsetY = (Screen.height - GridHeight)/2;
+        }
+
+        public enum BonusType {
+            NoBonus,
+            RowBomb,
+            CollumnBomb
         }
     }
 }
