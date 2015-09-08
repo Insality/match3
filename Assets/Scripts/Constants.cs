@@ -12,7 +12,7 @@ namespace Assets.Scripts {
         public const int GridWidth = LevelWidth*GemSize;
 
         // Gameplay settings:
-        public const int ScorePerGem = 50;
+        public const int ScorePerGem = 25;
 
         // Animation settings:
         public const float GemTransitionTime = 0.25f;

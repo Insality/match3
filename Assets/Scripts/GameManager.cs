@@ -19,10 +19,13 @@ namespace Assets.Scripts {
 
         private bool _isUpdatingGrid;
         private float _updatingGridCounter;
+        private PlayerStats _player;
 
 
         private void Start() {
             _camera = Camera.main;
+            _player = GetComponent<PlayerStats>();
+
             _choosenObject = new GameObject {name = "Cursor"};
             _choosenObject.AddComponent<SpriteRenderer>();
             _choosenObject.GetComponent<SpriteRenderer>().sprite = CursorSprite;
@@ -151,6 +154,7 @@ namespace Assets.Scripts {
             if (gem != null){
                 Gems.Remove(gem);
                 Destroy(gem.gameObject);
+                _player.AddScore(Constants.ScorePerGem);
             }
         }
 
