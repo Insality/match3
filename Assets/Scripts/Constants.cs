@@ -15,7 +15,7 @@ namespace Assets.Scripts {
         public const int ScorePerGem = 50;
 
         // Animation settings:
-        public const float GemTransitionTime = 0.4f;
+        public const float GemTransitionTime = 0.25f;
         public static int GridOffsetX;
         public static int GridOffsetY;
 
