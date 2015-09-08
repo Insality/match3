@@ -11,8 +11,8 @@ namespace Assets.Scripts {
         public List<GemLogic> Gems;
 
         private Camera _camera;
-        private GemLogic _choosen;
-        private GameObject _choosenObject;
+        private GemLogic _choosenGem;
+        private GameObject _cursor;
 
         private bool _isUpdatingGrid;
 
@@ -26,9 +26,9 @@ namespace Assets.Scripts {
             _camera = Camera.main;
             _player = GetComponent<PlayerStats>();
 
-            _choosenObject = new GameObject {name = "Cursor"};
-            _choosenObject.AddComponent<SpriteRenderer>();
-            _choosenObject.GetComponent<SpriteRenderer>().sprite = CursorSprite;
+            _cursor = new GameObject {name = "Cursor"};
+            _cursor.AddComponent<SpriteRenderer>();
+            _cursor.GetComponent<SpriteRenderer>().sprite = CursorSprite;
 
             InitLevel();
         }
@@ -40,7 +40,7 @@ namespace Assets.Scripts {
             Gems.Clear();
             _player.Restart();
 
-            SelectGem(null);
+            SetActiveGem(null);
             _isUpdatingGrid = false;
             _updatingGridCounter = 0;
 
@@ -85,7 +85,7 @@ namespace Assets.Scripts {
                         ChooseGem(grid);
                     }
                     else{
-                        _choosen = null;
+                        _choosenGem = null;
                     }
                 }
 
@@ -166,28 +166,28 @@ namespace Assets.Scripts {
 
         private void ChooseGem(Vector2 gridPos) {
             var gem = GetGemByGridPos(gridPos);
-            if (_choosen != null){
-                if (_choosen.IsCanSwap(gridPos)){
-                    Swap(_choosen, GetGemByGridPos(gridPos));
+            if (_choosenGem != null){
+                if (_choosenGem.IsCanSwap(gridPos)){
+                    Swap(_choosenGem, GetGemByGridPos(gridPos));
                 }
                 else{
-                    SelectGem(gem);
+                    SetActiveGem(gem);
                 }
             }
             else{
-                SelectGem(gem);
+                SetActiveGem(gem);
             }
         }
 
-        private void SelectGem(GemLogic gem) {
-            _choosen = gem;
+        private void SetActiveGem(GemLogic gem) {
+            _choosenGem = gem;
             if (gem == null) {
-                _choosenObject.transform.position = new Vector2(-10, -10);
+                _cursor.transform.position = new Vector2(-10, -10);
             } else {
                 var screenPos = Utils.GetScreenPosByGrid(gem.GridPos);
                 var newPos = _camera.ScreenToWorldPoint(screenPos);
                 newPos.z = 0;
-                _choosenObject.transform.position = newPos;
+                _cursor.transform.position = newPos;
             }
         }
 
@@ -216,7 +216,7 @@ namespace Assets.Scripts {
             _lastMovedGem2 = gem2;
             Invoke("CheckReverseTurn", Constants.GemTransitionTime/2);
 
-            SelectGem(null);
+            SetActiveGem(null);
             _updatingGridCounter = Constants.GemTransitionTime;
         }
 

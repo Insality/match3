@@ -36,7 +36,7 @@ namespace Assets.Scripts {
         private void Update() {
             var goal = Utils.GetScreenPosByGrid(GridPos);
             goal = _camera.ScreenToWorldPoint(goal);
-            transform.position = Vector2.Lerp(goal, transform.position, Constants.GemTransitionTime);
+            transform.position = Vector2.Lerp(goal, transform.position, Constants.GemTransitionTime*2);
         }
 
         public bool IsCanSwap(Vector2 pos) {
