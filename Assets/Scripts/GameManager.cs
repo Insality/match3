@@ -1,29 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Assets.Scripts.Game;
+﻿using Assets.Scripts.Game;
 using UnityEngine;
 
 namespace Assets.Scripts {
     public class GameManager: MonoBehaviour {
-        // Old::
         public BoardLogic BoardLogic;
         public Camera Camera;
         public Sprite CursorSprite;
 
-        public GameObject GemPrefab;
-        public List<GemLogic> Gems;
-
         private GemLogic _choosenGem;
         private GameObject _cursor;
 
-        private GemLogic _lastMovedGem1;
-        private GemLogic _lastMovedGem2;
         private PlayerStats _player;
         private float _updatingGridCounter;
-
-
-        // New::
-
 
         private void Start() {
             Camera = Camera.main;
@@ -39,7 +27,7 @@ namespace Assets.Scripts {
             BoardLogic.InitBoard(this, 6, 8);
         }
 
-      
+
         private void Update() {
             UpdateControl();
 
@@ -83,12 +71,12 @@ namespace Assets.Scripts {
 
                 if (Input.GetMouseButtonDown(1)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
-                    BoardLogic.DestroyGem((int)grid.x, (int)grid.y);
+                    BoardLogic.DestroyGem((int) grid.x, (int) grid.y);
                 }
             }
 
             if (Input.GetKeyDown(KeyCode.Space)){
-               BoardLogic.ClearBoard();
+                BoardLogic.ClearBoard();
             }
         }
 
@@ -103,6 +91,10 @@ namespace Assets.Scripts {
                 newPos.z = -5;
                 _cursor.transform.position = newPos;
             }
+        }
+
+        public void AddScore(int score) {
+            _player.AddScore(score);
         }
     }
 }

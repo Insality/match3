@@ -44,7 +44,7 @@ namespace Assets.Scripts.Game {
                 gem.BonusAction();
 
                 Destroy(gem.gameObject);
-                //                _player.AddScore(Constants.ScorePerGem);
+                _gameManager.AddScore(Constants.ScorePerGem);
             }
         }
 

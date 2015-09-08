@@ -2,7 +2,6 @@
 
 namespace Assets.Scripts {
     public class Constants: MonoBehaviour {
-        
         public enum BonusType {
             NoBonus,
             RowBomb,
@@ -22,6 +21,5 @@ namespace Assets.Scripts {
 
         // Animation settings:
         public const float GemTransitionTime = 0.35f;
-
     }
 }

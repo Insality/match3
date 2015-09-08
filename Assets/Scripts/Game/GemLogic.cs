@@ -7,9 +7,8 @@ namespace Assets.Scripts {
         public Constants.BonusType Bonus;
         public Sprite BonusCollumnBombSprite;
         public Sprite BonusRowBombSprite;
-       
+
         public Vector2 GridPos;
-        private Camera _camera;
 
         private BoardLogic _board;
         private int _curType = -1;
@@ -17,7 +16,6 @@ namespace Assets.Scripts {
 
         private void Start() {
             _spriteRenderer = GetComponent<SpriteRenderer>();
-            _camera = Camera.main;
 
             if (_curType == -1){
                 _curType = Random.Range(0, _board.GemTypes.Length);
@@ -27,13 +25,14 @@ namespace Assets.Scripts {
 
         public void Init(BoardLogic board, int x, int y, Constants.BonusType bonus) {
             _board = board;
+            transform.parent = board.transform;
+
             GridPos = new Vector2(x, y);
             _spriteRenderer = GetComponent<SpriteRenderer>();
             if (bonus != Constants.BonusType.NoBonus){
                 AddBonus(bonus);
             }
 
-            transform.parent = board.transform;
             // Calc Position:
             var screenPos = Utils.GetScreenPosByGrid(new Vector2(x, y), transform);
             var goalWorldPos = Camera.main.ScreenToWorldPoint(screenPos);
@@ -41,6 +40,10 @@ namespace Assets.Scripts {
         }
 
         private void Update() {
+            UpdatePos();
+        }
+
+        private void UpdatePos() {
             var goalScreenPos = Utils.GetScreenPosByGrid(GridPos, _board.transform);
             var goalWorldPos = Camera.main.ScreenToWorldPoint(goalScreenPos);
 
@@ -70,6 +73,10 @@ namespace Assets.Scripts {
             return _curType;
         }
 
+        /// <summary>
+        ///     Добавляет бонус-эффект к гему. Тут добавляется внешний вид
+        ///     Действия описываются в BonusAction()
+        /// </summary>
         public void AddBonus(Constants.BonusType bonus) {
             Bonus = bonus;
             var bonusGO = new GameObject();
@@ -87,17 +94,20 @@ namespace Assets.Scripts {
             }
         }
 
+        /// <summary>
+        ///     Описываются действия каждого бонус-эффекта. Вызывается при уничтожении гема
+        /// </summary>
         public void BonusAction() {
             if (Bonus == Constants.BonusType.CollumnBomb){
                 var toDestroy = _board.Gems.Where(g=>GridPos.x == g.GridPos.x).ToList();
                 foreach (var gem in toDestroy){
-                    _board.DestroyGem((int)gem.GridPos.x, (int)gem.GridPos.y);
+                    _board.DestroyGem((int) gem.GridPos.x, (int) gem.GridPos.y);
                 }
             }
             if (Bonus == Constants.BonusType.RowBomb){
-                var toDestroy = _board.Gems.Where(g => GridPos.y == g.GridPos.y).ToList();
+                var toDestroy = _board.Gems.Where(g=>GridPos.y == g.GridPos.y).ToList();
                 foreach (var gem in toDestroy){
-                    _board.DestroyGem((int)gem.GridPos.x, (int)gem.GridPos.y);
+                    _board.DestroyGem((int) gem.GridPos.x, (int) gem.GridPos.y);
                 }
             }
         }
