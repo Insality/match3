@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Assets.Scripts.Game;
 using UnityEngine;
 
 namespace Assets.Scripts {
@@ -6,10 +7,11 @@ namespace Assets.Scripts {
         public Constants.BonusType Bonus;
         public Sprite BonusCollumnBombSprite;
         public Sprite BonusRowBombSprite;
-        public Sprite[] GemTypes;
+       
         public Vector2 GridPos;
         private Camera _camera;
 
+        private BoardLogic _board;
         private int _curType = -1;
         private SpriteRenderer _spriteRenderer;
 
@@ -18,23 +20,31 @@ namespace Assets.Scripts {
             _camera = Camera.main;
 
             if (_curType == -1){
-                _curType = Random.Range(0, GemTypes.Length);
+                _curType = Random.Range(0, _board.GemTypes.Length);
             }
             SetType(_curType);
         }
 
-        public void Init(int x, int y, Constants.BonusType bonus) {
+        public void Init(BoardLogic board, int x, int y, Constants.BonusType bonus) {
+            _board = board;
             GridPos = new Vector2(x, y);
             _spriteRenderer = GetComponent<SpriteRenderer>();
             if (bonus != Constants.BonusType.NoBonus){
                 AddBonus(bonus);
             }
+
+            transform.parent = board.transform;
+            // Calc Position:
+            var screenPos = Utils.GetScreenPosByGrid(new Vector2(x, y), transform);
+            var goalWorldPos = Camera.main.ScreenToWorldPoint(screenPos);
+            transform.localPosition = goalWorldPos;
         }
 
         private void Update() {
-            var goalPos = Utils.GetScreenPosByGrid(GridPos);
-            goalPos = _camera.ScreenToWorldPoint(goalPos);
-            transform.position = Vector2.Lerp(goalPos, transform.position, Constants.GemTransitionTime*2);
+            var goalScreenPos = Utils.GetScreenPosByGrid(GridPos, _board.transform);
+            var goalWorldPos = Camera.main.ScreenToWorldPoint(goalScreenPos);
+
+            transform.localPosition = Vector2.Lerp(goalWorldPos, transform.localPosition, Constants.GemTransitionTime*2);
         }
 
         public bool IsCanSwap(Vector2 pos) {
@@ -50,9 +60,9 @@ namespace Assets.Scripts {
         }
 
         public void SetType(int type) {
-            if (type >= 0 && type < GemTypes.Length){
+            if (type >= 0 && type < _board.GemTypes.Length){
                 _curType = type;
-                _spriteRenderer.sprite = GemTypes[type];
+                _spriteRenderer.sprite = _board.GemTypes[type];
             }
         }
 
@@ -77,17 +87,17 @@ namespace Assets.Scripts {
             }
         }
 
-        public void BonusAction(GameManager gManager) {
+        public void BonusAction() {
             if (Bonus == Constants.BonusType.CollumnBomb){
-                var toDestroy = gManager.Gems.Where(g=>GridPos.x == g.GridPos.x).ToList();
+                var toDestroy = _board.Gems.Where(g=>GridPos.x == g.GridPos.x).ToList();
                 foreach (var gem in toDestroy){
-                    gManager.DestroyGem(gem.GridPos);
+                    _board.DestroyGem((int)gem.GridPos.x, (int)gem.GridPos.y);
                 }
             }
             if (Bonus == Constants.BonusType.RowBomb){
-                var toDestroy = gManager.Gems.Where(g=>GridPos.y == g.GridPos.y).ToList();
+                var toDestroy = _board.Gems.Where(g => GridPos.y == g.GridPos.y).ToList();
                 foreach (var gem in toDestroy){
-                    gManager.DestroyGem(gem.GridPos);
+                    _board.DestroyGem((int)gem.GridPos.x, (int)gem.GridPos.y);
                 }
             }
         }

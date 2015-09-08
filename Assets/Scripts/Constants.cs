@@ -22,13 +22,6 @@ namespace Assets.Scripts {
 
         // Animation settings:
         public const float GemTransitionTime = 0.35f;
-        public static int GridOffsetX;
-        public static int GridOffsetY;
 
-
-        private void Start() {
-            GridOffsetX = (Screen.width - GridWidth)/2;
-            GridOffsetY = (Screen.height - GridHeight)/2;
-        }
     }
 }
