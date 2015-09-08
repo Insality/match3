@@ -118,7 +118,7 @@ namespace Assets.Scripts {
                 _updatingGridCounter = Constants.GemTransitionTime;
             }
             else{
-                CheckAndDestroyMathes();
+                CheckAndDestroyMatches();
             }
 
             RefillGrid();
@@ -135,8 +135,8 @@ namespace Assets.Scripts {
             }
         }
 
-        private void CheckAndDestroyMathes() {
-            var matches = GetMatchesGem();
+        private void CheckAndDestroyMatches() {
+            var matches = GetMatchGems();
             foreach (var match in matches){
                 var centerPos = match[match.Count/2].GridPos;
                 var type = match[0].GetGemType();
@@ -163,7 +163,7 @@ namespace Assets.Scripts {
             var gem = GetGemByGridPos(gridPos);
             if (_choosenGem != null){
                 if (_choosenGem.IsCanSwap(gridPos)){
-                    Swap(_choosenGem, GetGemByGridPos(gridPos));
+                    SwapGems(_choosenGem, GetGemByGridPos(gridPos));
                 }
                 else{
                     SetActiveGem(gem);
@@ -195,14 +195,14 @@ namespace Assets.Scripts {
             var gem = GetGemByGridPos(gridPos);
             if (gem != null){
                 Gems.Remove(gem);
-                gem.ActionBonus(this);
+                gem.BonusAction(this);
 
                 Destroy(gem.gameObject);
                 _player.AddScore(Constants.ScorePerGem);
             }
         }
 
-        public void Swap(GemLogic gem1, GemLogic gem2) {
+        public void SwapGems(GemLogic gem1, GemLogic gem2) {
             var tmpPos = gem1.GridPos;
             MoveGem(gem1, gem2.GridPos);
             MoveGem(gem2, tmpPos);
@@ -216,7 +216,7 @@ namespace Assets.Scripts {
         }
 
         public void CheckReverseTurn() {
-            if (!GetMatchesGem().Any()){
+            if (!GetMatchGems().Any()){
                 var tmpPos = _lastMovedGem1.GridPos;
                 MoveGem(_lastMovedGem1, _lastMovedGem2.GridPos);
                 MoveGem(_lastMovedGem2, tmpPos);
@@ -224,7 +224,7 @@ namespace Assets.Scripts {
         }
 
 
-        public List<List<GemLogic>> GetMatchesGem() {
+        public List<List<GemLogic>> GetMatchGems() {
             var matches = new List<List<GemLogic>>();
             // check rows:
             for (var i = 0; i < Constants.LevelHeight; i++){
