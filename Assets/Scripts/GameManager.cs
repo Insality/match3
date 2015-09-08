@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using UnityEngine;
-using UnityEngine.Networking;
-using Random = UnityEngine.Random;
 
 namespace Assets.Scripts {
     public class GameManager: MonoBehaviour {
@@ -17,16 +14,12 @@ namespace Assets.Scripts {
         private GemLogic _choosen;
         private GameObject _choosenObject;
 
-        private int _gridOffsetX;
-        private int _gridOffsetY;
-
         private bool _isUpdatingGrid;
-        private float _updatingGridCounter;
-        private PlayerStats _player;
 
         private GemLogic _lastMovedGem1;
         private GemLogic _lastMovedGem2;
-
+        private PlayerStats _player;
+        private float _updatingGridCounter;
 
 
         private void Start() {
@@ -45,11 +38,12 @@ namespace Assets.Scripts {
                 Destroy(gem.gameObject);
             }
             Gems.Clear();
-
             _player.Restart();
+
             SelectGem(null);
             _isUpdatingGrid = false;
             _updatingGridCounter = 0;
+
             for (var i = 0; i < Constants.LevelHeight; i++){
                 for (var j = 0; j < Constants.LevelWidth; j++){
                     CreateGem(j, i, Constants.BonusType.NoBonus);
@@ -62,9 +56,9 @@ namespace Assets.Scripts {
             gem.GetComponent<GemLogic>().Init(posX, posY, bonus);
 
             var gemPos = Utils.GetScreenPosByGrid(new Vector2(posX, posY));
-
             gemPos = _camera.ScreenToWorldPoint(gemPos);
             gemPos = new Vector3(gemPos.x, gemPos.y, 0);
+
             gem.transform.position = gemPos;
 
             Gems.Add(gem.GetComponent<GemLogic>());
@@ -75,33 +69,12 @@ namespace Assets.Scripts {
             UpdateControl();
 
             _updatingGridCounter -= Time.deltaTime;
-            if (_updatingGridCounter <= 0) {
+            if (_updatingGridCounter <= 0){
                 _updatingGridCounter = 0;
                 UpdateGrid();
             }
         }
 
-        private void CheckAndDestroyMathes() {
-            var matches = GetMatchesGem();
-            foreach (var match in matches){
-                var centerPos = match[match.Count/2].GridPos;
-                var type = match[0].GetGemType();
-                var bonusType = Constants.BonusType.NoBonus;
-                if (match[0].GridPos.x == match[1].GridPos.x){
-                    bonusType = Constants.BonusType.CollumnBomb;
-                } else if (match[0].GridPos.y == match[1].GridPos.y) {
-                    bonusType = Constants.BonusType.RowBomb;
-                }
-
-                foreach (var gemLogic in match){
-                    DestroyGem(gemLogic.GridPos);
-                }
-                if (match.Count > 3) {
-                    var gem = CreateGem((int)centerPos.x, (int)centerPos.y, bonusType);
-                    gem.SetType(type);
-                }
-            }
-        }
 
         private void UpdateControl() {
             if (!_isUpdatingGrid){
@@ -116,7 +89,7 @@ namespace Assets.Scripts {
                     }
                 }
 
-                if (Input.GetMouseButtonDown(1)) {
+                if (Input.GetMouseButtonDown(1)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition);
                     DestroyGem(grid);
                 }
@@ -130,7 +103,7 @@ namespace Assets.Scripts {
             }
         }
 
-        private bool UpdateGrid() {
+        private void UpdateGrid() {
             var isUpdated = false;
             for (var i = 1; i < Constants.LevelHeight; i++){
                 for (var j = 0; j < Constants.LevelWidth; j++){
@@ -143,7 +116,6 @@ namespace Assets.Scripts {
                     }
                 }
             }
-            
 
             if (isUpdated){
                 _updatingGridCounter = Constants.GemTransitionTime;
@@ -155,8 +127,6 @@ namespace Assets.Scripts {
             }
 
             RefillGrid();
-
-            return isUpdated;
         }
 
         private void RefillGrid() {
@@ -164,10 +134,35 @@ namespace Assets.Scripts {
             for (var j = 0; j < Constants.LevelWidth; j++){
                 var gem = GetGemByGridPos(new Vector2(j, i));
                 if (gem == null){
-                    CreateGem(j, i, Constants.BonusType.NoBonus);
+                    var newGem = CreateGem(j, i+2, Constants.BonusType.NoBonus);
+                    MoveGem(newGem, new Vector2(j, i));
                 }
             }
         }
+
+        private void CheckAndDestroyMathes() {
+            var matches = GetMatchesGem();
+            foreach (var match in matches){
+                var centerPos = match[match.Count/2].GridPos;
+                var type = match[0].GetGemType();
+                var bonusType = Constants.BonusType.NoBonus;
+                if (match[0].GridPos.x == match[1].GridPos.x){
+                    bonusType = Constants.BonusType.CollumnBomb;
+                }
+                else if (match[0].GridPos.y == match[1].GridPos.y){
+                    bonusType = Constants.BonusType.RowBomb;
+                }
+
+                foreach (var gemLogic in match){
+                    DestroyGem(gemLogic.GridPos);
+                }
+                if (match.Count > 3){
+                    var gem = CreateGem((int) centerPos.x, (int) centerPos.y, bonusType);
+                    gem.SetType(type);
+                }
+            }
+        }
+
 
         private void ChooseGem(Vector2 gridPos) {
             var gem = GetGemByGridPos(gridPos);
@@ -181,6 +176,18 @@ namespace Assets.Scripts {
             }
             else{
                 SelectGem(gem);
+            }
+        }
+
+        private void SelectGem(GemLogic gem) {
+            _choosen = gem;
+            if (gem == null) {
+                _choosenObject.transform.position = new Vector2(-10, -10);
+            } else {
+                var screenPos = Utils.GetScreenPosByGrid(gem.GridPos);
+                var newPos = _camera.ScreenToWorldPoint(screenPos);
+                newPos.z = 0;
+                _choosenObject.transform.position = newPos;
             }
         }
 
@@ -208,29 +215,16 @@ namespace Assets.Scripts {
             _lastMovedGem1 = gem1;
             _lastMovedGem2 = gem2;
             Invoke("CheckReverseTurn", Constants.GemTransitionTime/2);
-            
+
             SelectGem(null);
             _updatingGridCounter = Constants.GemTransitionTime;
         }
 
         public void CheckReverseTurn() {
-            if (!GetMatchesGem().Any()) {
+            if (!GetMatchesGem().Any()){
                 var tmpPos = _lastMovedGem1.GridPos;
                 MoveGem(_lastMovedGem1, _lastMovedGem2.GridPos);
                 MoveGem(_lastMovedGem2, tmpPos);
-            }
-        }
-
-        private void SelectGem(GemLogic gem) {
-            _choosen = gem;
-            if (gem == null){
-                _choosenObject.transform.position = new Vector2(-10, -10);
-            }
-            else{
-                var screenPos = Utils.GetScreenPosByGrid(gem.GridPos);
-                var newPos = _camera.ScreenToWorldPoint(screenPos);
-                newPos.z = 0;
-                _choosenObject.transform.position = newPos;
             }
         }
 
@@ -266,7 +260,6 @@ namespace Assets.Scripts {
             }
 
             // Check collumns
-            // check rows:
             for (var j = 0; j < Constants.LevelWidth; j++){
                 var lastMatch = new List<GemLogic>();
                 for (var i = 0; i < Constants.LevelHeight; i++){
