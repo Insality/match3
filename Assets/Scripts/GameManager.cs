@@ -76,6 +76,10 @@ namespace Assets.Scripts {
                 }
 
                 if (Input.GetMouseButtonDown(1)){
+                    SetActiveGem(null);
+                }
+
+                if (Input.GetMouseButtonDown(2)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
                     BoardLogic.DestroyGem((int) grid.x, (int) grid.y);
                 }

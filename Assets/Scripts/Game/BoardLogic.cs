@@ -50,20 +50,15 @@ namespace Assets.Scripts.Game {
 
         /// <summary>
         ///     Отвечает за перемещение гемов под силой гравитации, проверяет совпадения на текущем поле
-        ///     Возвращает true, если доска была изменена за время обновления
         /// </summary>
-        public bool UpdateBoard() {
-            var isUpdated = UpdateGravity();
-
-            if (!isUpdated){
+        public void UpdateBoard() {
+            if (!UpdateGravity()){
                 DestroyMatches();
             }
             else{
                 _gameManager.SetAnimationState(Constants.GemTransitionTime);
             }
-
             RefillBoard();
-            return isUpdated;
         }
 
         private bool UpdateGravity() {
