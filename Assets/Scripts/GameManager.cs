@@ -59,20 +59,16 @@ namespace Assets.Scripts {
         }
 
         private void UpdateControl() {
-            // Block control if grid on updating
+            // Block mouse control if grid on updating
             if (_gameState == Constants.GameState.WaitingInput){
-                if (Input.GetMouseButtonDown(0)){
+                // Simple click
+                if (Input.GetMouseButtonDown(0)) {
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
                     // If clicked on grid:
                     var gem = BoardLogic.GetGem((int) grid.x, (int) grid.y);
-                    if (gem != null && _choosenGem != null){
-                        if (_choosenGem.IsCanSwap(grid)){
-                            BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int) grid.x, (int) grid.y));
-                            SetActiveGem(null);
-                        }
-                        else{
-                            SetActiveGem(gem);
-                        }
+                    if (gem != null && _choosenGem != null && _choosenGem.IsCanSwap(grid)){
+                        BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int) grid.x, (int) grid.y));
+                        SetActiveGem(null);
                     }
                     else{
                         SetActiveGem(gem);
@@ -82,6 +78,16 @@ namespace Assets.Scripts {
                 if (Input.GetMouseButtonDown(1)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
                     BoardLogic.DestroyGem((int) grid.x, (int) grid.y);
+                }
+
+                // Mouse drag control:
+                if (_choosenGem != null && Input.GetMouseButton(0)){
+                    var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
+                    var gem = BoardLogic.GetGem((int)grid.x, (int)grid.y);
+                    if (gem != null && _choosenGem.IsCanSwap(grid)){
+                        BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int)grid.x, (int)grid.y));
+                        SetActiveGem(null);
+                    }
                 }
             }
 

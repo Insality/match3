@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace Assets.Scripts.Game {
     public class BoardLogic: MonoBehaviour {
+        public int BoardHeight;
+        public int BoardWidth;
         public GameObject GemPrefab;
         public Sprite[] GemTypes;
         public List<GemLogic> Gems;
 
-        public int BoardHeight;
-        public int BoardWidth;
         private GameManager _gameManager;
 
         private GemLogic _lastMovedGem1;
@@ -53,7 +53,7 @@ namespace Assets.Scripts.Game {
         ///     Возвращает true, если доска была изменена за время обновления
         /// </summary>
         public bool UpdateBoard() {
-            var isUpdated = UpdateGravity(); 
+            var isUpdated = UpdateGravity();
 
             if (!isUpdated){
                 DestroyMatches();
@@ -68,11 +68,11 @@ namespace Assets.Scripts.Game {
 
         private bool UpdateGravity() {
             var isUpdated = false;
-            for (var i = 1; i < BoardHeight; i++) {
-                for (var j = 0; j < BoardWidth; j++) {
+            for (var i = 1; i < BoardHeight; i++){
+                for (var j = 0; j < BoardWidth; j++){
                     var gem = GetGem(j, i);
-                    if (gem != null) {
-                        if (MoveGem(gem, j, i - 1)) {
+                    if (gem != null){
+                        if (MoveGem(gem, j, i - 1)){
                             isUpdated = true;
                         }
                     }
