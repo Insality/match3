@@ -9,13 +9,15 @@ namespace Assets.Scripts {
 
         private GemLogic _choosenGem;
         private GameObject _cursor;
+        private Constants.GameState _gameState;
 
         private PlayerStats _player;
-        private float _updatingGridCounter;
+        private float _stateAnimationCounter;
 
         private void Start() {
             Camera = Camera.main;
             _player = GetComponent<PlayerStats>();
+            _gameState = Constants.GameState.WaitingInput;
 
             _cursor = new GameObject {name = "Cursor"};
             _cursor.AddComponent<SpriteRenderer>();
@@ -30,42 +32,50 @@ namespace Assets.Scripts {
 
         private void Update() {
             UpdateControl();
+            UpdateGameState();
 
-            _updatingGridCounter -= Time.deltaTime;
-            if (_updatingGridCounter <= 0){
-                _updatingGridCounter = 0;
+            if (_gameState == Constants.GameState.WaitingInput){
                 BoardLogic.UpdateBoard();
             }
         }
 
-        public void SetUpdatingCounter(float time) {
-            _updatingGridCounter = time;
+        public void SetAnimationState(float time) {
+            _stateAnimationCounter = time;
+            _gameState = Constants.GameState.Animation;
+        }
+
+        private void UpdateGameState() {
+            switch (_gameState){
+                case Constants.GameState.WaitingInput:
+                    break;
+                case Constants.GameState.Animation:
+                    _stateAnimationCounter -= Time.deltaTime;
+                    if (_stateAnimationCounter <= 0){
+                        _stateAnimationCounter = 0;
+                        _gameState = Constants.GameState.WaitingInput;
+                    }
+                    break;
+            }
         }
 
         private void UpdateControl() {
             // Block control if grid on updating
-            // TODO: Change to game-states.
-            if (_updatingGridCounter <= 0){
+            if (_gameState == Constants.GameState.WaitingInput){
                 if (Input.GetMouseButtonDown(0)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
                     // If clicked on grid:
                     var gem = BoardLogic.GetGem((int) grid.x, (int) grid.y);
-                    if (gem != null){
-                        if (_choosenGem != null){
-                            if (_choosenGem.IsCanSwap(grid)){
-                                BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int) grid.x, (int) grid.y));
-                                SetActiveGem(null);
-                            }
-                            else{
-                                SetActiveGem(gem);
-                            }
+                    if (gem != null && _choosenGem != null){
+                        if (_choosenGem.IsCanSwap(grid)){
+                            BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int) grid.x, (int) grid.y));
+                            SetActiveGem(null);
                         }
                         else{
                             SetActiveGem(gem);
                         }
                     }
                     else{
-                        SetActiveGem(null);
+                        SetActiveGem(gem);
                     }
                 }
 
@@ -86,7 +96,7 @@ namespace Assets.Scripts {
                 _cursor.transform.position = new Vector3(-10, -10);
             }
             else{
-                var screenPos = Utils.GetScreenPosByGrid(gem.GridPos, BoardLogic.transform);
+                var screenPos = Utils.GetScreenPosByGrid(gem.GetVectorPos(), BoardLogic.transform);
                 var newPos = Camera.ScreenToWorldPoint(screenPos);
                 newPos.z = -5;
                 _cursor.transform.position = newPos;

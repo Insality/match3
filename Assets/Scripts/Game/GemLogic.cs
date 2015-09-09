@@ -8,7 +8,8 @@ namespace Assets.Scripts {
         public Sprite BonusCollumnBombSprite;
         public Sprite BonusRowBombSprite;
 
-        public Vector2 GridPos;
+        public int X;
+        public int Y;
 
         private BoardLogic _board;
         private int _curType = -1;
@@ -27,14 +28,15 @@ namespace Assets.Scripts {
             _board = board;
             transform.parent = board.transform;
 
-            GridPos = new Vector2(x, y);
+            X = x;
+            Y = y;
             _spriteRenderer = GetComponent<SpriteRenderer>();
             if (bonus != Constants.BonusType.NoBonus){
                 AddBonus(bonus);
             }
 
             // Calc Position:
-            var screenPos = Utils.GetScreenPosByGrid(new Vector2(x, y), transform);
+            var screenPos = Utils.GetScreenPosByGrid(GetVectorPos(), transform);
             var goalWorldPos = Camera.main.ScreenToWorldPoint(screenPos);
             transform.localPosition = goalWorldPos;
         }
@@ -44,17 +46,17 @@ namespace Assets.Scripts {
         }
 
         private void UpdatePos() {
-            var goalScreenPos = Utils.GetScreenPosByGrid(GridPos, _board.transform);
+            var goalScreenPos = Utils.GetScreenPosByGrid(GetVectorPos(), _board.transform);
             var goalWorldPos = Camera.main.ScreenToWorldPoint(goalScreenPos);
 
             transform.localPosition = Vector2.Lerp(goalWorldPos, transform.localPosition, Constants.GemTransitionTime*2);
         }
 
         public bool IsCanSwap(Vector2 pos) {
-            if (pos.x >= 0 && pos.x < Constants.LevelWidth && pos.y >= 0 && pos.y < Constants.LevelHeight){
+            if (pos.x >= 0 && pos.x < _board.BoardWidth && pos.y >= 0 && pos.y < _board.BoardHeight){
                 // Chech if pos is Neighbor
-                if (Mathf.Abs(GridPos.x - pos.x) == 1 && (GridPos.y - pos.y == 0) ||
-                    Mathf.Abs(GridPos.y - pos.y) == 1 && (GridPos.x - pos.x == 0)){
+                if (Mathf.Abs(X - pos.x) == 1 && (Y - pos.y == 0) ||
+                    Mathf.Abs(Y - pos.y) == 1 && (X - pos.x == 0)){
                     return true;
                 }
                 return false;
@@ -67,6 +69,15 @@ namespace Assets.Scripts {
                 _curType = type;
                 _spriteRenderer.sprite = _board.GemTypes[type];
             }
+        }
+
+        public void SetPos(int x, int y) {
+            X = x;
+            Y = y;
+        }
+
+        public Vector2 GetVectorPos() {
+            return new Vector2(X, Y);
         }
 
         public int GetGemType() {
@@ -99,15 +110,15 @@ namespace Assets.Scripts {
         /// </summary>
         public void BonusAction() {
             if (Bonus == Constants.BonusType.CollumnBomb){
-                var toDestroy = _board.Gems.Where(g=>GridPos.x == g.GridPos.x).ToList();
+                var toDestroy = _board.Gems.Where(g=>X == g.X).ToList();
                 foreach (var gem in toDestroy){
-                    _board.DestroyGem((int) gem.GridPos.x, (int) gem.GridPos.y);
+                    _board.DestroyGem(gem.X, gem.Y);
                 }
             }
             if (Bonus == Constants.BonusType.RowBomb){
-                var toDestroy = _board.Gems.Where(g=>GridPos.y == g.GridPos.y).ToList();
+                var toDestroy = _board.Gems.Where(g=>Y == g.Y).ToList();
                 foreach (var gem in toDestroy){
-                    _board.DestroyGem((int) gem.GridPos.x, (int) gem.GridPos.y);
+                    _board.DestroyGem(gem.X, gem.Y);
                 }
             }
         }
