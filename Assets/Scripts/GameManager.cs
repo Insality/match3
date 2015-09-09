@@ -4,7 +4,6 @@ using UnityEngine;
 namespace Assets.Scripts {
     public class GameManager: MonoBehaviour {
         public BoardLogic BoardLogic;
-        public BoardLogic BoardLogic2;
         public Camera Camera;
         public Sprite CursorSprite;
 
@@ -63,11 +62,11 @@ namespace Assets.Scripts {
             if (_gameState == Constants.GameState.WaitingInput){
                 // Simple click
                 if (Input.GetMouseButtonDown(0)){
-                    var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
+                    var gridPos = Utils.GetGridPosByScreenPos(Input.mousePosition, BoardLogic.transform);
                     // If clicked on grid:
-                    var gem = BoardLogic.GetGem((int) grid.x, (int) grid.y);
-                    if (gem != null && _choosenGem != null && _choosenGem.IsCanSwap(grid)){
-                        BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int) grid.x, (int) grid.y));
+                    var gem = BoardLogic.GetGem(gridPos);
+                    if (gem != null && _choosenGem != null && _choosenGem.IsCanSwap(gridPos)){
+                        BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem(gridPos));
                         SetActiveGem(null);
                     }
                     else{
@@ -80,14 +79,14 @@ namespace Assets.Scripts {
                 }
 
                 if (Input.GetMouseButtonDown(2)){
-                    var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
-                    BoardLogic.DestroyGem((int) grid.x, (int) grid.y);
+                    var gridPos = Utils.GetGridPosByScreenPos(Input.mousePosition, BoardLogic.transform);
+                    BoardLogic.DestroyGem(gridPos);
                 }
 
                 // Mouse drag control:
                 if (_choosenGem != null && Input.GetMouseButton(0)){
-                    var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
-                    var gem = BoardLogic.GetGem((int) grid.x, (int) grid.y);
+                    var grid = Utils.GetGridPosByScreenPos(Input.mousePosition, BoardLogic.transform);
+                    var gem = BoardLogic.GetGem(grid);
                     if (gem != null && _choosenGem.IsCanSwap(grid)){
                         BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int) grid.x, (int) grid.y));
                         SetActiveGem(null);
@@ -106,7 +105,7 @@ namespace Assets.Scripts {
                 _cursor.transform.position = new Vector3(-10, -10);
             }
             else{
-                var screenPos = Utils.GetScreenPosByGrid(gem.GetVectorPos(), BoardLogic.transform);
+                var screenPos = Utils.GetScreenPosByGridPos(gem.GetVectorPos(), BoardLogic.transform);
                 var newPos = Camera.ScreenToWorldPoint(screenPos);
                 newPos.z = -5;
                 _cursor.transform.position = newPos;

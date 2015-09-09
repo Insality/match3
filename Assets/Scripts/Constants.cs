@@ -20,6 +20,6 @@ namespace Assets.Scripts {
         public const int ScorePerGem = 25;
 
         // Animation settings:
-        public const float GemTransitionTime = 0.30f;
+        public const float GemTransitionTime = 0.35f;
     }
 }

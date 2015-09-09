@@ -40,7 +40,7 @@ namespace Assets.Scripts {
             }
 
             // Calc Position:
-            var screenPos = Utils.GetScreenPosByGrid(GetVectorPos(), transform);
+            var screenPos = Utils.GetScreenPosByGridPos(GetVectorPos(), transform);
             var goalWorldPos = Camera.main.ScreenToWorldPoint(screenPos);
             transform.localPosition = goalWorldPos;
         }
@@ -51,7 +51,7 @@ namespace Assets.Scripts {
         }
 
         private void UpdatePos() {
-            var goalScreenPos = Utils.GetScreenPosByGrid(GetVectorPos(), _board.transform);
+            var goalScreenPos = Utils.GetScreenPosByGridPos(GetVectorPos(), _board.transform);
             var goalWorldPos = Camera.main.ScreenToWorldPoint(goalScreenPos);
 
             transform.localPosition = Vector2.Lerp(goalWorldPos, transform.localPosition, Constants.GemTransitionTime*2);

@@ -24,6 +24,10 @@ namespace Assets.Scripts.Game {
             return gem;
         }
 
+        public GemLogic GetGem(Vector2 vectorPos) {
+            return GetGem((int) vectorPos.x, (int) vectorPos.y);
+        }
+
         public GemLogic AddGem(int x, int y) {
             return AddGem(x, y, Constants.BonusType.NoBonus);
         }
@@ -48,6 +52,10 @@ namespace Assets.Scripts.Game {
             }
         }
 
+        public void DestroyGem(Vector2 vectorPos) {
+            DestroyGem((int) vectorPos.x, (int) vectorPos.y);
+        }
+
         /// <summary>
         ///     Отвечает за перемещение гемов под силой гравитации, проверяет совпадения на текущем поле
         /// </summary>
@@ -58,6 +66,7 @@ namespace Assets.Scripts.Game {
             else{
                 _gameManager.SetAnimationState(Constants.GemTransitionTime);
             }
+
             RefillBoard();
         }
 

@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts {
     public class Utils: MonoBehaviour {
-        public static Vector2 GetGridPosByScreen(Vector2 screenPos, Transform boardTransform) {
+        public static Vector2 GetGridPosByScreenPos(Vector2 screenPos, Transform boardTransform) {
             var boardScreen = Camera.main.WorldToScreenPoint(boardTransform.position);
 
             var x = (int) ((Input.mousePosition.x - boardScreen.x + Constants.GemSize/2)/Constants.GemSize);
@@ -10,7 +10,7 @@ namespace Assets.Scripts {
             return new Vector2(x, y);
         }
 
-        public static Vector2 GetScreenPosByGrid(Vector2 gridPos, Transform boardTransform) {
+        public static Vector2 GetScreenPosByGridPos(Vector2 gridPos, Transform boardTransform) {
             var boardScreen = Camera.main.WorldToScreenPoint(boardTransform.position);
 
             var screenPos = new Vector2(gridPos.x*Constants.GemSize, gridPos.y*Constants.GemSize);
