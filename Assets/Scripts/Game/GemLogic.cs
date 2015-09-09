@@ -10,9 +10,11 @@ namespace Assets.Scripts {
 
         public int X;
         public int Y;
+        private float _animationCounter;
 
         private BoardLogic _board;
         private int _curType = -1;
+        private bool _isHighlighted;
         private SpriteRenderer _spriteRenderer;
 
         private void Start() {
@@ -28,6 +30,8 @@ namespace Assets.Scripts {
             _board = board;
             transform.parent = board.transform;
 
+            _isHighlighted = false;
+            _animationCounter = 0;
             X = x;
             Y = y;
             _spriteRenderer = GetComponent<SpriteRenderer>();
@@ -43,6 +47,7 @@ namespace Assets.Scripts {
 
         private void Update() {
             UpdatePos();
+            UpdateAnimation();
         }
 
         private void UpdatePos() {
@@ -50,6 +55,15 @@ namespace Assets.Scripts {
             var goalWorldPos = Camera.main.ScreenToWorldPoint(goalScreenPos);
 
             transform.localPosition = Vector2.Lerp(goalWorldPos, transform.localPosition, Constants.GemTransitionTime*2);
+        }
+
+        private void UpdateAnimation() {
+            if (_isHighlighted){
+                _animationCounter += Time.deltaTime;
+                if (_animationCounter > 1) _animationCounter = 0;
+                var brightness = 0.5f + 0.5f*_animationCounter;
+                _spriteRenderer.color = new Color(brightness, brightness, brightness);
+            }
         }
 
         public bool IsCanSwap(Vector2 pos) {
@@ -82,6 +96,10 @@ namespace Assets.Scripts {
 
         public int GetGemType() {
             return _curType;
+        }
+
+        public void Highlight() {
+            _isHighlighted = true;
         }
 
         /// <summary>

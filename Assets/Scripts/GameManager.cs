@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Assets.Scripts {
     public class GameManager: MonoBehaviour {
         public BoardLogic BoardLogic;
+        public BoardLogic BoardLogic2;
         public Camera Camera;
         public Sprite CursorSprite;
 
@@ -24,7 +25,6 @@ namespace Assets.Scripts {
             _cursor.GetComponent<SpriteRenderer>().sprite = CursorSprite;
             SetActiveGem(null);
 
-            // New
             BoardLogic = GameObject.FindGameObjectWithTag("Board").GetComponent<BoardLogic>();
             BoardLogic.InitBoard(this, 6, 8);
         }
@@ -62,7 +62,7 @@ namespace Assets.Scripts {
             // Block mouse control if grid on updating
             if (_gameState == Constants.GameState.WaitingInput){
                 // Simple click
-                if (Input.GetMouseButtonDown(0)) {
+                if (Input.GetMouseButtonDown(0)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
                     // If clicked on grid:
                     var gem = BoardLogic.GetGem((int) grid.x, (int) grid.y);
@@ -87,9 +87,9 @@ namespace Assets.Scripts {
                 // Mouse drag control:
                 if (_choosenGem != null && Input.GetMouseButton(0)){
                     var grid = Utils.GetGridPosByScreen(Input.mousePosition, BoardLogic.transform);
-                    var gem = BoardLogic.GetGem((int)grid.x, (int)grid.y);
+                    var gem = BoardLogic.GetGem((int) grid.x, (int) grid.y);
                     if (gem != null && _choosenGem.IsCanSwap(grid)){
-                        BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int)grid.x, (int)grid.y));
+                        BoardLogic.SwapGems(_choosenGem, BoardLogic.GetGem((int) grid.x, (int) grid.y));
                         SetActiveGem(null);
                     }
                 }

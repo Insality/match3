@@ -67,13 +67,29 @@ namespace Assets.Scripts.Game {
                 for (var j = 0; j < BoardWidth; j++){
                     var gem = GetGem(j, i);
                     if (gem != null){
-                        if (MoveGem(gem, j, i - 1)){
+                        var height = GetEmptyCollumnCountFrom(j, i);
+                        if (MoveGem(gem, j, i - height)){
                             isUpdated = true;
                         }
                     }
                 }
             }
             return isUpdated;
+        }
+
+        /// <summary>
+        ///     Поиск глубины незаполненных клеток от указанной
+        ///     Указанная клетка не считается при подсчете глубины
+        /// </summary>
+        private int GetEmptyCollumnCountFrom(int x, int y) {
+            var count = 0;
+            for (var k = y - 1; k >= 0; k--){
+                if (GetGem(x, k) != null){
+                    break;
+                }
+                count++;
+            }
+            return count;
         }
 
         /// <summary>
@@ -85,8 +101,12 @@ namespace Assets.Scripts.Game {
             for (var j = 0; j < BoardWidth; j++){
                 var gem = GetGem(j, i);
                 if (gem == null){
-                    var newGem = AddGem(j, i + 2, Constants.BonusType.NoBonus);
-                    MoveGem(newGem, j, i);
+                    // Fill all null cells at one turn:
+                    var height = GetEmptyCollumnCountFrom(j, i);
+                    for (var k = height; k >= 0; k--){
+                        var newGem = AddGem(j, i + 2 - k, Constants.BonusType.NoBonus);
+                        MoveGem(newGem, j, i - k);
+                    }
                 }
             }
         }
@@ -230,6 +250,7 @@ namespace Assets.Scripts.Game {
                 var centerPos = match[match.Count/2].GetVectorPos();
                 var type = match[0].GetGemType();
                 var bonusType = Constants.BonusType.NoBonus;
+
                 if (match[0].X == match[1].X){
                     bonusType = Constants.BonusType.CollumnBomb;
                 }
@@ -246,6 +267,16 @@ namespace Assets.Scripts.Game {
                     gem.SetType(type);
                 }
             }
+        }
+
+        /// <summary>
+        ///     Возвращает возможные ходы. каждый список - пара гемов, которые нужно поменять местами
+        /// </summary>
+        public List<List<GemLogic>> GetPotenticalMatches() {
+            var potentialMatches = new List<List<GemLogic>>();
+
+
+            return potentialMatches;
         }
     }
 }
